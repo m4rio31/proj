@@ -117,6 +117,22 @@ var testdata = []data{
 			{-200, 100, -0.001790493, 0.000895247},
 			{-200, -100, -0.001790493, -0.000895247},
 		},
+	}, {
+		// builtins.gie:2251
+		proj:  "+proj=lcc   +ellps=GRS80  +lat_1=0.5 +lat_2=2",
+		delta: 0.1 * 0.001,
+		fwd: [][]float64{
+			{2, 1, 222588.439735968, 110660.533870800},
+			{2, -1, 222756.879700279, -110532.797660827},
+			{-2, 1, -222588.439735968, 110660.533870800},
+			{-2, -1, -222756.879700279, -110532.797660827},
+		},
+		inv: [][]float64{
+			{200, 100, 0.001796359, 0.000904232},
+			{200, -100, 0.001796358, -0.000904233},
+			{-200, 100, -0.001796359, 0.000904232},
+			{-200, -100, -0.001796358, -0.000904233},
+		},
 	},
 }
 
@@ -205,6 +221,20 @@ func BenchmarkConvertAiry(b *testing.B) {
 
 func BenchmarkConvertEqc(b *testing.B) {
 	ps, _ := support.NewProjString("+proj=eqc +a=6400000 +lat_1=0.5 +lat_2=2")
+	_, opx, _ := core.NewSystem(ps)
+	op := opx.(core.IConvertLPToXY)
+	input := &core.CoordLP{Lam: support.DDToR(12.0), Phi: support.DDToR(55.0)}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, _ = op.Forward(input)
+	}
+}
+
+func BenchmarkConvertLambert(b *testing.B) {
+
+	ps, _ := support.NewProjString("+proj=lcc   +ellps=GRS80  +lat_1=0.5 +lat_2=2")
 	_, opx, _ := core.NewSystem(ps)
 	op := opx.(core.IConvertLPToXY)
 	input := &core.CoordLP{Lam: support.DDToR(12.0), Phi: support.DDToR(55.0)}
